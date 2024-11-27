@@ -1,4 +1,4 @@
-﻿using BackendGermanSmartDetector.Models;
+﻿using BackendGermanSmartDetector.Classes;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackendGermanSmartDetector.AppDbContext
