@@ -2,9 +2,9 @@
 using BCrypt.Net;
 using System.Threading.Tasks;
 using BackendGermanSmartDetector.AppDbContext;
-using BackendGermanSmartDetector.Classes;
+using BackendGermanSmartDetector.Models;
 
-namespace BackendGermanSmartDetector.Functions
+namespace BackendGermanSmartDetector.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
