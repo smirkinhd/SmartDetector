@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using BCrypt.Net;
+using System.Threading.Tasks;
 using BackendGermanSmartDetector.AppDbContext;
-using BackendGermanSmartDetector.Models;
+using BackendGermanSmartDetector.Classes;
 
 namespace BackendGermanSmartDetector.Functions
 {

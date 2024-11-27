@@ -1,4 +1,4 @@
-﻿namespace BackendGermanSmartDetector.Models
+﻿namespace BackendGermanSmartDetector.Classes
 {
     public class UserLoginModel
     {
