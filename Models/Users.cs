@@ -1,4 +1,4 @@
-﻿namespace BackendGermanSmartDetector.Classes
+﻿namespace BackendGermanSmartDetector.Models
 {
     public class Users
     {

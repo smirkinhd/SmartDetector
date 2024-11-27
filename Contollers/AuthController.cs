@@ -3,12 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using BackendGermanSmartDetector.Classes;
+using BackendGermanSmartDetector.Models;
 using System.Text;
 using BackendGermanSmartDetector.AppDbContext;
 using Microsoft.AspNetCore.Authorization;
 
-namespace BackendGermanSmartDetector.Functions
+namespace BackendGermanSmartDetector.Controllers
 {
     public class AuthController : Controller
     {
