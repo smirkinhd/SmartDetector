@@ -1,6 +1,6 @@
-// Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './Login.css'; // Подключаем стили
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -23,10 +23,8 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Сохраняем токен в localStorage
-        localStorage.setItem('token', data.token);
-        // Перенаправляем на страницу профиля
-        navigate('/profile');
+        localStorage.setItem('token', data.token); // Сохраняем токен
+        navigate('/profile'); // Переход на профиль
       } else {
         setError(data.error || 'Login failed');
       }
@@ -37,24 +35,33 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <h1>Вход</h1>
-      <form onSubmit={handleLogin}>
+    <div className="login-container">
+      <h1 className="login-title">Вход</h1>
+      <form className="login-form" onSubmit={handleLogin}>
         <input
+          className="login-input"
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <input
+          className="login-input"
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button type="submit">Войти</button>
+        <button className="login-button" type="submit">
+          Войти
+        </button>
       </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="login-error">{error}</p>}
+
+      {/* Кнопка для перехода на страницу регистрации */}
+      <div className="switch-to-register">
+        <p>Нет аккаунта? <button className="login-button" onClick={() => navigate('/register')}>Зарегистрируйтесь</button></p>
+      </div>
     </div>
   );
 };

@@ -1,0 +1,150 @@
+/* Основной контейнер профиля */
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #3c3c3c, #5c5c5c); /* Асфальтовый фон */
+  color: #ffffff;
+  font-family: 'Arial', sans-serif;
+  animation: fadeIn 1s ease-in-out;
+  padding: 20px;
+}
+
+/* Верхний контейнер (сверху справа) */
+.profile-header {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #2e2e2e; /* Отличающийся цвет */
+  border-radius: 8px;
+  padding: 10px 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: left;
+  font-size: 1rem;
+}
+
+.profile-header .dropdown-menu {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.profile-header button {
+  padding: 8px 12px;
+  background-color: #d9534f; /* Красный для выхода */
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.profile-header button:hover {
+  background-color: #c9302c;
+  transform: scale(1.05);
+}
+
+/* Контейнер для загрузки файла */
+.file-upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+}
+
+/* Стили для кнопки выбора файла */
+.file-upload-button {
+  display: block;
+  margin: 20px 0;
+  padding: 15px 20px;
+  font-size: 1.2rem;
+  color: #ffffff;
+  background-color: #4a90e2; /* Яркий синий */
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.3s, background-color 0.3s;
+  text-align: center;
+}
+
+.file-upload-button:hover {
+  background-color: #357ab8;
+  transform: scale(1.05);
+}
+
+/* Для скрытого поля input */
+.file-upload-input {
+  display: none;
+}
+
+/* Превью видео */
+.video-preview {
+  width: 100%;
+  max-width: 800px;
+  margin-top: 20px;
+  border-radius: 8px;
+}
+
+/* Кнопка для открытия кадра */
+.open-frame-button {
+  padding: 10px 15px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.open-frame-button:hover {
+  background-color: #218838;
+}
+
+/* Модальное окно */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* z-index: 1000; */
+}
+
+.modal-content {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  max-width: 500px;
+  width: 90%;
+}
+
+.modal-content .close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

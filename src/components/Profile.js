@@ -1,7 +1,6 @@
-// Profile.js
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Modal.css'; // Добавляем стили для всплывающего окна
+import './Profile.css'; // Подключаем стили
 
 const Profile = () => {
   const [userData, setUserData] = useState({ email: '', phone: '' });
@@ -11,22 +10,26 @@ const Profile = () => {
   const [selectedPoints, setSelectedPoints] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(null);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false); // Для кнопки выхода
+
   const navigate = useNavigate();
   const videoRef = useRef(null);
 
-  // Обработчик загрузки видео
+  // Загрузка видео
   const handleVideoUpload = (event) => {
     setVideoFile(event.target.files[0]);
   };
 
-  // Открытие модального окна с текущим кадром
+  // Получение кадра из видео
   const handleOpenFrame = () => {
     const canvas = document.createElement('canvas');
     const video = videoRef.current;
+
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
     setCurrentFrame(canvas.toDataURL('image/png'));
     setIsModalOpen(true);
   };
@@ -37,17 +40,17 @@ const Profile = () => {
     setSelectedPoints([]);
   };
 
-  // Добавление выбранной области
+  // Добавление области
   const handleAddArea = () => {
     if (selectedPoints.length >= 3) {
       setAreas((prevAreas) => [...prevAreas, selectedPoints]);
       setSelectedPoints([]);
     } else {
-      alert('Please select at least 3 points to create an area');
+      alert('Выберите как минимум 3 точки для создания области.');
     }
   };
 
-  // Добавление точки при клике на изображение в модальном окне
+  // Добавление точки на изображении
   const handleImageClick = (event) => {
     const rect = event.target.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -55,11 +58,18 @@ const Profile = () => {
     setSelectedPoints((prevPoints) => [...prevPoints, { x, y }]);
   };
 
+  // Выход из аккаунта
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Удаляем токен из локального хранилища
+    navigate('/'); // Перенаправление на главную страницу
+  };
+
+  // Получение данных профиля
   useEffect(() => {
     const token = localStorage.getItem('token');
-    
+
     if (!token) {
-      navigate('/login'); // Перенаправление на страницу входа, если токен отсутствует
+      navigate('/login'); // Перенаправление, если токен отсутствует
       return;
     }
 
@@ -78,11 +88,11 @@ const Profile = () => {
           setUserData({ email: data.email, phone: data.phone });
         } else {
           const errorData = await response.json();
-          setError(errorData.error || 'Failed to fetch profile data');
-          navigate('/login'); // Перенаправление на страницу входа при ошибке
+          setError(errorData.error || 'Не удалось получить данные профиля.');
+          navigate('/login');
         }
       } catch (error) {
-        setError('An error occurred while fetching profile data');
+        setError('Произошла ошибка при получении данных профиля.');
         console.error(error);
       }
     };
@@ -91,36 +101,51 @@ const Profile = () => {
   }, [navigate]);
 
   return (
-    <div>
-      <h1>Личный кабинет</h1>
-      <p><strong>Email:</strong> {userData.email}</p>
-      <p><strong>Телефон:</strong> {userData.phone}</p>
+    <div className="profile-container">
+      {/* Верхний блок с информацией пользователя */}
+      <div className="profile-header">
+        <div
+          className="user-info"
+          onClick={() => setIsDropdownVisible(!isDropdownVisible)}
+        >
+          <span>{userData.email}</span>
+        </div>
+        {isDropdownVisible && (
+          <div className="dropdown-menu">
+            <button onClick={handleLogout}>Выход</button>
+          </div>
+        )}
+      </div>
 
-      <div>
-        <input type="file" accept="video/*" onChange={handleVideoUpload} />
+      {/* Кнопка выбора файла */}
+      <div className="file-upload-container">
+        <input
+          type="file"
+          accept="video/*"
+          onChange={handleVideoUpload}
+          id="file-upload"
+          className="file-upload-input"
+        />
+        <label htmlFor="file-upload" className="file-upload-button">
+          Выберите файл
+        </label>
+
         {videoFile && (
           <>
             <video
               ref={videoRef}
               src={URL.createObjectURL(videoFile)}
               controls
-              style={{ width: '100%', border: '1px solid black' }}
+              className="video-preview"
             />
-            <button onClick={handleOpenFrame}>Открыть кадр</button>
+            <button onClick={handleOpenFrame} className="open-frame-button">
+              Открыть кадр
+            </button>
           </>
         )}
       </div>
 
-      <div>
-        <h2>Выбранные области</h2>
-        {areas.map((area, index) => (
-          <div key={index}>
-            <p>Область {index + 1}:</p>
-            <pre>{JSON.stringify(area, null, 2)}</pre>
-          </div>
-        ))}
-      </div>
-
+      {/* Модальное окно */}
       {isModalOpen && (
         <div className="modal">
           <div className="modal-content">
@@ -128,14 +153,14 @@ const Profile = () => {
             {currentFrame && (
               <img
                 src={currentFrame}
-                alt="Current Frame"
+                alt="Кадр"
                 onClick={handleImageClick}
-                style={{ maxWidth: '100%', cursor: 'crosshair' }}
+                className="modal-image"
               />
             )}
             <p>Выбранные точки: {JSON.stringify(selectedPoints)}</p>
             <button onClick={handleAddArea}>Добавить область</button>
-            <button onClick={handleCloseModal}>Закончить</button>
+            <button onClick={handleCloseModal}>Закрыть</button>
           </div>
         </div>
       )}

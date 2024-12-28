@@ -1,14 +1,21 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import './Home.css'; // Подключение файла со стилями
 
 function Home() {
   const navigate = useNavigate();
 
   return (
-    <div>
-      <h1>Добро пожаловать</h1>
-      <button onClick={() => navigate('/login')}>Войти</button>
-      <button onClick={() => navigate('/register')}>Зарегистрироваться</button>
+    <div className="home-container">
+      <h1 className="home-title">Добро пожаловать</h1>
+      <div className="home-buttons">
+        <button className="home-button" onClick={() => navigate('/login')}>
+          Войти
+        </button>
+        <button className="home-button" onClick={() => navigate('/register')}>
+          Зарегистрироваться
+        </button>
+      </div>
     </div>
   );
 }
