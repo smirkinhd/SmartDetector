@@ -2,6 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css'; // Подключаем стили
 
+
+const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080', '#008000', '#808080']; // 10 цветов
+
 const Profile = () => {
   const [userData, setUserData] = useState({ email: '', phone: '' });
   const [error, setError] = useState('');
@@ -11,14 +14,148 @@ const Profile = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(null);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false); // Для кнопки выхода
+  const [isPageBlocked, setIsPageBlocked] = useState(false); // Для блокировки страницы
+  const [uploadProgress, setUploadProgress] = useState(0); // Для отслеживания прогресса
+  const [videoUrl, setVideoUrl] = useState(null); // Новый state для хранения URL
 
   const navigate = useNavigate();
   const videoRef = useRef(null);
 
   // Загрузка видео
   const handleVideoUpload = (event) => {
-    setVideoFile(event.target.files[0]);
+    const file = event.target.files[0];
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('video/')) {
+      alert('Пожалуйста, выберите видео-файл!');
+      return;
+    }
+
+    if (videoFile && videoFile.name === file.name) {
+      return; // Если тот же файл выбран, ничего не делаем
+    }
+
+    setVideoFile(file);
+    setVideoUrl(URL.createObjectURL(file));  // Создаем URL для локального просмотра
   };
+  const handleRunAlgorithm = async () => {
+    // Собираем области из текущего состояния
+    const formattedAreas = areas.map((area, index) => ({
+      areaNumber: index + 1, // Номер области
+      coordinates: area, // Координаты области
+    }));
+  
+  
+    // Создаем JSON-файл из данных
+    const jsonBlob = new Blob([JSON.stringify(formattedAreas)], { type: 'application/json' });
+    const jsonFile = new File([jsonBlob], 'areas.json');
+  
+    // Проверка на наличие видео
+    if (!videoFile) {
+      alert('Пожалуйста, загрузите видео!');
+      return;
+    }
+  
+    // Формируем данные для отправки
+    const formData = new FormData();
+    formData.append('video', videoFile);
+    formData.append('areas', jsonFile);
+  
+    // Отправляем запрос на сервер
+    try {
+      const response = await fetch('http://localhost:5000/upload', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Ответ от сервера:', data);
+  
+        const videoUrl = data.videoUrl;
+  
+        if (videoUrl) {
+          const videoUrlWithCacheBuster = videoUrl + '?t=' + new Date().getTime();
+          // setIsPageBlocked(false);
+          // handleCloseModal();
+          
+          // Используем useNavigate для редиректа на Result.js с передачей URL
+          navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
+        }
+      } else {
+        alert('Ошибка при отправке данных!');
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert('Произошла ошибка при отправке данных на сервер.');
+    }
+  };
+
+
+  // const handleRunAlgorithm = async () => {
+  //   setIsPageBlocked(true);
+  //   setUploadProgress(0);
+  
+  //   const formattedAreas = areas.map((area, index) => ({
+  //     areaNumber: index + 1,
+  //     coordinates: area,
+  //   }));
+  
+  //   const jsonBlob = new Blob([JSON.stringify(formattedAreas)], { type: 'application/json' });
+  //   const jsonFile = new File([jsonBlob], 'areas.json');
+  
+  //   if (!videoFile) {
+  //     alert('Пожалуйста, загрузите видео!');
+  //     setIsPageBlocked(false);
+  //     return;
+  //   }
+  
+  //   const formData = new FormData();
+  //   formData.append('video', videoFile);
+  //   formData.append('areas', jsonFile);
+  
+  //   try {
+  //     const response = await fetch('http://localhost:5000/upload', {
+  //       method: 'POST',
+  //       body: formData,
+  //       onUploadProgress: (event) => {
+  //         if (event.total) {
+  //           setUploadProgress(Math.round((event.loaded * 100) / event.total));
+  //         }
+  //       }
+  //     });
+  
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       console.log('Ответ от сервера:', data);
+  
+  //       const videoUrl = data.videoUrl;
+  
+  //       if (videoUrl) {
+  //         // Добавляем случайный параметр к URL, чтобы избежать кэширования
+  //         const videoUrlWithCacheBuster = videoUrl + '?t=' + new Date().getTime();
+  //         setIsPageBlocked(false);
+  //         handleCloseModal();
+          
+  //         // Используем useNavigate для редиректа на Result.js с передачей URL
+  //         navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
+  //       } else {
+  //         alert('Ответ от сервера не содержит videoUrl');
+  //         setIsPageBlocked(false);
+  //       }
+  //     } else {
+  //       alert('Ошибка при отправке данных!');
+  //       setIsPageBlocked(false);
+  //     }
+  //   } catch (error) {
+  //     console.error('Ошибка:', error);
+  //     alert('Произошла ошибка при отправке данных на сервер.');
+  //     setIsPageBlocked(false);
+  //   }
+  // };
+
 
   // Получение кадра из видео
   const handleOpenFrame = () => {
@@ -42,11 +179,16 @@ const Profile = () => {
 
   // Добавление области
   const handleAddArea = () => {
-    if (selectedPoints.length >= 3) {
+    if (areas.length >= 7) {
+      alert('Максимум 7 областей разрешено.');
+      return;
+    }
+
+    if (selectedPoints.length >= 2) {
       setAreas((prevAreas) => [...prevAreas, selectedPoints]);
       setSelectedPoints([]);
     } else {
-      alert('Выберите как минимум 3 точки для создания области.');
+      alert('Выберите как минимум 2 точки для создания области или линии.');
     }
   };
 
@@ -64,15 +206,16 @@ const Profile = () => {
     navigate('/'); // Перенаправление на главную страницу
   };
 
+
   // Получение данных профиля
   useEffect(() => {
     const token = localStorage.getItem('token');
-
+  
     if (!token) {
       navigate('/login'); // Перенаправление, если токен отсутствует
       return;
     }
-
+  
     const fetchProfile = async () => {
       try {
         const response = await fetch('http://localhost:5000/profile', {
@@ -82,7 +225,7 @@ const Profile = () => {
             'Content-Type': 'application/json',
           },
         });
-
+  
         if (response.ok) {
           const data = await response.json();
           setUserData({ email: data.email, phone: data.phone });
@@ -96,9 +239,9 @@ const Profile = () => {
         console.error(error);
       }
     };
-
+  
     fetchProfile();
-  }, [navigate]);
+  }, [navigate]); // Убираем videoFile из зависимостей
 
   return (
     <div className="profile-container">
@@ -127,17 +270,17 @@ const Profile = () => {
           className="file-upload-input"
         />
         <label htmlFor="file-upload" className="file-upload-button">
-          Выберите файл
+          {videoFile ? 'Изменить файл' : 'Выберите файл'}
         </label>
 
-        {videoFile && (
+        {videoUrl && (
           <>
-            <video
-              ref={videoRef}
-              src={URL.createObjectURL(videoFile)}
-              controls
-              className="video-preview"
-            />
+              <video
+                ref={videoRef}
+                src={videoUrl}  // Используем videoUrl для отображения
+                controls
+                className="video-preview"
+              />
             <button onClick={handleOpenFrame} className="open-frame-button">
               Открыть кадр
             </button>
@@ -150,18 +293,72 @@ const Profile = () => {
         <div className="modal">
           <div className="modal-content">
             <span className="close" onClick={handleCloseModal}>&times;</span>
-            {currentFrame && (
-              <img
-                src={currentFrame}
-                alt="Кадр"
-                onClick={handleImageClick}
-                className="modal-image"
-              />
-            )}
-            <p>Выбранные точки: {JSON.stringify(selectedPoints)}</p>
-            <button onClick={handleAddArea}>Добавить область</button>
-            <button onClick={handleCloseModal}>Закрыть</button>
+            <div className="content-container">
+              <div className="image-container">
+                {currentFrame && (
+                  <div>
+                    <img
+                      src={currentFrame}
+                      alt="Кадр"
+                      onClick={handleImageClick}
+                      className="modal-image"
+                    />
+                    <svg className="overlay">
+                      {areas.map((area, index) => (
+                        <React.Fragment key={index}>
+                          {area.length > 2 ? (
+                            // Отображение области
+                            <polygon
+                              points={area.map(point => `${point.x},${point.y}`).join(' ')}
+                              fill={colors[index % colors.length]}
+                              opacity="0.5"
+                            />
+                          ) : (
+                            // Отображение линии между двумя точками
+                            <line
+                              x1={area[0].x}
+                              y1={area[0].y}
+                              x2={area[1].x}
+                              y2={area[1].y}
+                              stroke={colors[index % colors.length]}
+                              strokeWidth="2"
+                            />
+                          )}
+                        </React.Fragment>
+                      ))}
+                      {/* Отображение выбранных точек */}
+                      {selectedPoints.map((point, index) => (
+                        <circle key={index} cx={point.x} cy={point.y} r="5" fill="red" />
+                      ))}
+                    </svg>
+                  </div>
+                )}
+              </div>
+              <div className="right-panel">
+                <h3>Области</h3>
+                <ul>
+                  {areas.map((area, index) => (
+                    <li key={index}>
+                      <strong>Область {index + 1}:</strong> {JSON.stringify(area)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="button-group">
+              <button className="modal-button add-area" onClick={handleAddArea}>Добавить область</button>
+              <button className="modal-button run-algorithm" onClick={handleRunAlgorithm}>Запустить алгоритм</button>
+              <button className="modal-button close-modal" onClick={handleCloseModal}>Закрыть</button>
+            </div>
           </div>
+        </div>
+      )}
+      {isPageBlocked && (
+        <div className="page-blocker">
+          <div className="progress-bar-container">
+            <div className="progress-bar" style={{ width: `${uploadProgress}%` }}></div>
+          </div>
+          <p>Загрузка... {uploadProgress}%</p>
         </div>
       )}
     </div>

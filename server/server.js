@@ -138,7 +138,77 @@ app.get('/profile', authenticateToken, async (req, res) => {
   }
 });
 
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Конфигурация multer для сохранения файлов
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, path.join(__dirname, 'uploads')); // Папка для сохранения
+    },
+    filename: (req, file, cb) => {
+      cb(null, `${Date.now()}-${file.originalname}`);
+    },
+  }),
+});
+
+// Создаем папку "uploads", если её нет
+if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
+  fs.mkdirSync(path.join(__dirname, 'uploads'));
+}
+
+app.post('/upload', upload.fields([{ name: 'video' }, { name: 'areas' }]), (req, res) => {
+  try {
+    const videoFile = req.files['video'] ? req.files['video'][0] : null;
+    const areasFile = req.files['areas'] ? req.files['areas'][0] : null;
+
+    if (!videoFile || !areasFile) {
+      return res.status(400).send({ error: 'Видео или JSON-файл не были переданы!' });
+    }
+
+    console.log('Видео сохранено как:', videoFile.path);
+    console.log('JSON-файл сохранен как:', areasFile.path);
+
+    // Печатаем путь, чтобы проверить его
+    const outputVideoPath = path.join(__dirname, '../public', '2024-08-07 01-16-23 (1).mkv');
+    console.log('Путь для перемещения видео:', outputVideoPath);  // Это для диагностики
+    pathnew = './loads/2024-08-07 01-16-23 (1).mkv'
+    // Перемещаем видео в папку public для доступности через HTTP
+    if (fs.existsSync(pathnew))
+    {
+      fs.renameSync(pathnew, outputVideoPath);
+    }
+
+    // Проверим, был ли файл перемещен в public
+    if (fs.existsSync(outputVideoPath)) {
+      console.log('Видео успешно перемещено в public:', outputVideoPath);
+    } else {
+      console.log('Не удалось переместить видео в папку public!');
+      return res.status(500).send({ error: 'Не удалось переместить видео в папку public' });
+    }
+
+    // Отправляем путь к видео в ответ
+    res.send({
+      message: 'Файлы успешно сохранены!',
+      videoUrl: '/2024-08-07 01-16-23 (1).mkv',  // Отправляем правильный путь для доступа к видео
+    });
+  } catch (error) {
+    console.error('Ошибка при сохранении файлов:', error);
+    res.status(500).send({ error: 'Ошибка при обработке запроса.' });
+  }
+});
+
+// Статический сервер для видео
+app.use(express.static(path.join(__dirname, 'public')));
+
+
+
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+

@@ -16,11 +16,9 @@ function Register() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, phone, password }),
       });
-      const data = await response.json();
-      alert(data.message || 'Registration successful');
-
       // Перенаправляем на страницу входа после успешной регистрации
       if (response.ok) {
+        console.log('Переход в форму входа');
         navigate('/login');
       }
     } catch (error) {
