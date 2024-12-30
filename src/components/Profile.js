@@ -40,91 +40,34 @@ const Profile = () => {
     setVideoFile(file);
     setVideoUrl(URL.createObjectURL(file));  // Создаем URL для локального просмотра
   };
-  const handleRunAlgorithm = async () => {
-    // Собираем области из текущего состояния
-    const formattedAreas = areas.map((area, index) => ({
-      areaNumber: index + 1, // Номер области
-      coordinates: area, // Координаты области
-    }));
-  
-  
-    // Создаем JSON-файл из данных
-    const jsonBlob = new Blob([JSON.stringify(formattedAreas)], { type: 'application/json' });
-    const jsonFile = new File([jsonBlob], 'areas.json');
-  
-    // Проверка на наличие видео
-    if (!videoFile) {
-      alert('Пожалуйста, загрузите видео!');
-      return;
-    }
-  
-    // Формируем данные для отправки
-    const formData = new FormData();
-    formData.append('video', videoFile);
-    formData.append('areas', jsonFile);
-  
-    // Отправляем запрос на сервер
-    try {
-      const response = await fetch('http://localhost:5000/upload', {
-        method: 'POST',
-        body: formData,
-      });
-  
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Ответ от сервера:', data);
-  
-        const videoUrl = data.videoUrl;
-  
-        if (videoUrl) {
-          const videoUrlWithCacheBuster = videoUrl + '?t=' + new Date().getTime();
-          // setIsPageBlocked(false);
-          // handleCloseModal();
-          
-          // Используем useNavigate для редиректа на Result.js с передачей URL
-          navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
-        }
-      } else {
-        alert('Ошибка при отправке данных!');
-      }
-    } catch (error) {
-      console.error('Ошибка:', error);
-      alert('Произошла ошибка при отправке данных на сервер.');
-    }
-  };
-
-
   // const handleRunAlgorithm = async () => {
-  //   setIsPageBlocked(true);
-  //   setUploadProgress(0);
-  
+  //   // Собираем области из текущего состояния
   //   const formattedAreas = areas.map((area, index) => ({
-  //     areaNumber: index + 1,
-  //     coordinates: area,
+  //     areaNumber: index + 1, // Номер области
+  //     coordinates: area, // Координаты области
   //   }));
   
+  
+  //   // Создаем JSON-файл из данных
   //   const jsonBlob = new Blob([JSON.stringify(formattedAreas)], { type: 'application/json' });
   //   const jsonFile = new File([jsonBlob], 'areas.json');
   
+  //   // Проверка на наличие видео
   //   if (!videoFile) {
   //     alert('Пожалуйста, загрузите видео!');
-  //     setIsPageBlocked(false);
   //     return;
   //   }
   
+  //   // Формируем данные для отправки
   //   const formData = new FormData();
   //   formData.append('video', videoFile);
   //   formData.append('areas', jsonFile);
   
+  //   // Отправляем запрос на сервер
   //   try {
   //     const response = await fetch('http://localhost:5000/upload', {
   //       method: 'POST',
   //       body: formData,
-  //       onUploadProgress: (event) => {
-  //         if (event.total) {
-  //           setUploadProgress(Math.round((event.loaded * 100) / event.total));
-  //         }
-  //       }
   //     });
   
   //     if (response.ok) {
@@ -134,27 +77,84 @@ const Profile = () => {
   //       const videoUrl = data.videoUrl;
   
   //       if (videoUrl) {
-  //         // Добавляем случайный параметр к URL, чтобы избежать кэширования
   //         const videoUrlWithCacheBuster = videoUrl + '?t=' + new Date().getTime();
-  //         setIsPageBlocked(false);
-  //         handleCloseModal();
+  //         // setIsPageBlocked(false);
+  //         // handleCloseModal();
           
   //         // Используем useNavigate для редиректа на Result.js с передачей URL
   //         navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
-  //       } else {
-  //         alert('Ответ от сервера не содержит videoUrl');
-  //         setIsPageBlocked(false);
   //       }
   //     } else {
   //       alert('Ошибка при отправке данных!');
-  //       setIsPageBlocked(false);
   //     }
   //   } catch (error) {
   //     console.error('Ошибка:', error);
   //     alert('Произошла ошибка при отправке данных на сервер.');
-  //     setIsPageBlocked(false);
   //   }
   // };
+
+
+  const handleRunAlgorithm = async () => {
+    setIsPageBlocked(true);
+    setUploadProgress(0);
+  
+    const formattedAreas = areas.map((area, index) => ({
+      areaNumber: index + 1,
+      coordinates: area,
+    }));
+  
+    const jsonBlob = new Blob([JSON.stringify(formattedAreas)], { type: 'application/json' });
+    const jsonFile = new File([jsonBlob], 'areas.json');
+  
+    if (!videoFile) {
+      alert('Пожалуйста, загрузите видео!');
+      setIsPageBlocked(false);
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append('video', videoFile);
+    formData.append('areas', jsonFile);
+  
+    try {
+      const response = await fetch('http://localhost:5000/upload', {
+        method: 'POST',
+        body: formData,
+        onUploadProgress: (event) => {
+          if (event.total) {
+            setUploadProgress(Math.round((event.loaded * 100) / event.total));
+          }
+        }
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Ответ от сервера:', data);
+  
+        const videoUrl = data.videoUrl;
+  
+        if (videoUrl) {
+          // Добавляем случайный параметр к URL, чтобы избежать кэширования
+          const videoUrlWithCacheBuster = videoUrl + '?t=' + new Date().getTime();
+          setIsPageBlocked(false);
+          handleCloseModal();
+          
+          // Используем useNavigate для редиректа на Result.js с передачей URL
+          navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
+        } else {
+          alert('Ответ от сервера не содержит videoUrl');
+          setIsPageBlocked(false);
+        }
+      } else {
+        alert('Ошибка при отправке данных!');
+        setIsPageBlocked(false);
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert('Произошла ошибка при отправке данных на сервер.');
+      setIsPageBlocked(false);
+    }
+  };
 
 
   // Получение кадра из видео
