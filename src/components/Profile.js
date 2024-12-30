@@ -40,59 +40,6 @@ const Profile = () => {
     setVideoFile(file);
     setVideoUrl(URL.createObjectURL(file));  // Создаем URL для локального просмотра
   };
-  // const handleRunAlgorithm = async () => {
-  //   // Собираем области из текущего состояния
-  //   const formattedAreas = areas.map((area, index) => ({
-  //     areaNumber: index + 1, // Номер области
-  //     coordinates: area, // Координаты области
-  //   }));
-  
-  
-  //   // Создаем JSON-файл из данных
-  //   const jsonBlob = new Blob([JSON.stringify(formattedAreas)], { type: 'application/json' });
-  //   const jsonFile = new File([jsonBlob], 'areas.json');
-  
-  //   // Проверка на наличие видео
-  //   if (!videoFile) {
-  //     alert('Пожалуйста, загрузите видео!');
-  //     return;
-  //   }
-  
-  //   // Формируем данные для отправки
-  //   const formData = new FormData();
-  //   formData.append('video', videoFile);
-  //   formData.append('areas', jsonFile);
-  
-  //   // Отправляем запрос на сервер
-  //   try {
-  //     const response = await fetch('http://localhost:5000/upload', {
-  //       method: 'POST',
-  //       body: formData,
-  //     });
-  
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       console.log('Ответ от сервера:', data);
-  
-  //       const videoUrl = data.videoUrl;
-  
-  //       if (videoUrl) {
-  //         const videoUrlWithCacheBuster = videoUrl + '?t=' + new Date().getTime();
-  //         // setIsPageBlocked(false);
-  //         // handleCloseModal();
-          
-  //         // Используем useNavigate для редиректа на Result.js с передачей URL
-  //         navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
-  //       }
-  //     } else {
-  //       alert('Ошибка при отправке данных!');
-  //     }
-  //   } catch (error) {
-  //     console.error('Ошибка:', error);
-  //     alert('Произошла ошибка при отправке данных на сервер.');
-  //   }
-  // };
-
 
   const handleRunAlgorithm = async () => {
     setIsPageBlocked(true);
@@ -184,11 +131,11 @@ const Profile = () => {
       return;
     }
 
-    if (selectedPoints.length >= 2) {
+    if (selectedPoints.length === 4) {
       setAreas((prevAreas) => [...prevAreas, selectedPoints]);
       setSelectedPoints([]);
     } else {
-      alert('Выберите как минимум 2 точки для создания области или линии.');
+      alert('Выберите как минимум 4 точки для создания области.');
     }
   };
 
