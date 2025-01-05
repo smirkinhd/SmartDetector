@@ -7,13 +7,17 @@ using BackendGermanSmartDetector.Models;
 using System.Text;
 using BackendGermanSmartDetector.AppDbContext;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Cryptography;
 
 namespace BackendGermanSmartDetector.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class AuthController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
+
         public AuthController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
@@ -40,29 +44,31 @@ namespace BackendGermanSmartDetector.Controllers
                 return Unauthorized(new { error = "Неверные учетные данные" });
             }
 
+            // Получаем JWT_SECRET из конфигурации
             var jwtSecret = _configuration["JWT_SECRET"];
-            if (string.IsNullOrEmpty(jwtSecret))
+            if (string.IsNullOrEmpty(jwtSecret) || jwtSecret.Length < 32) // Длина секрета должна быть минимум 256 бит (32 байта)
             {
-                Console.Error.WriteLine("JWT_SECRET не определен");
-                return StatusCode(500, new { error = "Ошибка сервера" });
+                return StatusCode(500, new { error = "Ошибка сервера: секретный ключ JWT слишком короткий" });
             }
 
-            var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(jwtSecret);
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            // Создание описателя токена
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                new Claim("userId", user.Id.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                Subject = new ClaimsIdentity(new Claim[] { new Claim("userId", user.Id.ToString()) }),
+                Expires = DateTime.UtcNow.AddHours(1), // Токен истекает через 1 час
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature) // Используем HMAC-SHA256
             };
+
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(token);
 
             return Ok(new { token = tokenString });
         }
+
         [HttpGet("profile")]
         [Authorize]
         public async Task<IActionResult> GetProfile()

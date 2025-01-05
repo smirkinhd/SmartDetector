@@ -3,6 +3,7 @@ using BCrypt.Net;
 using System.Threading.Tasks;
 using BackendGermanSmartDetector.AppDbContext;
 using BackendGermanSmartDetector.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BackendGermanSmartDetector.Controllers
 {
@@ -14,15 +15,26 @@ namespace BackendGermanSmartDetector.Controllers
 
         public RegistrationController(ApplicationDbContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] Users user)
         {
-            if (user == null || string.IsNullOrWhiteSpace(user.Email) ||
-                string.IsNullOrWhiteSpace(user.Phone) || string.IsNullOrWhiteSpace(user.Password))
+            if (user == null)
             {
-                return BadRequest(new { message = "Все поля обязательны для заполнения" });
+                return BadRequest(new { message = "Некорректные данные" });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { message = "Проверьте корректность введённых данных", errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+            }
+
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == user.Email);
+            if (existingUser != null)
+            {
+                return Conflict(new { message = "Пользователь с таким email или телефоном уже зарегистрирован" });
             }
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
@@ -36,10 +48,9 @@ namespace BackendGermanSmartDetector.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Ошибка регистрации: " + ex.Message);
-                return StatusCode(500, new { error = "Регистрация провалилась" });
+                Console.WriteLine($"Ошибка регистрации: {ex.Message}");
+                return StatusCode(500, new { message = "Произошла ошибка во время регистрации. Попробуйте позже." });
             }
         }
-
     }
 }
