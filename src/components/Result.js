@@ -1,17 +1,24 @@
-import { useLocation } from 'react-router-dom'; // Импортируем хук для работы с URL-параметрами
+import { useLocation, useNavigate } from 'react-router-dom'; // Импортируем useNavigate для кнопки "Назад"
+import './Result.css'; // Подключаем стили
 
 const Result = () => {
-  // Получаем параметры из URL
   const location = useLocation();
+  const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
-  const videoUrl = params.get('videoUrl'); // Извлекаем videoUrl из параметров
+  const videoUrl = params.get('videoUrl');
 
   return (
-    <div>
-      <h1>Результаты обработки видео</h1>
+    <div className="result-container">
+      <button 
+        className="result-back-button" 
+        onClick={() => navigate('/profile')} // Возвращаемся на главную страницу
+      >
+        Назад
+      </button>
+      <h1 className="result-title">Результаты обработки видео</h1>
       {videoUrl ? (
-        <div>
-          <video controls width="100%" height="auto">
+        <div className="result-video-container">
+          <video className="result-video" controls>
             <source src={videoUrl} type="video/mp4" />
             Ваш браузер не поддерживает видео.
           </video>

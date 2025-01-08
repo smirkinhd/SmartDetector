@@ -1,0 +1,79 @@
+/* Основной контейнер страницы */
+.result-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #3c3c3c, #5c5c5c); /* Асфальтовый фон */
+    color: #ffffff;
+    font-family: 'Arial', sans-serif;
+    animation: fadeIn 1s ease-in-out;
+    padding: 20px;
+  }
+  
+  /* Заголовок */
+  .result-title {
+    font-size: 2rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  
+  /* Кнопка "Назад" */
+  .result-back-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: #4a90e2; /* Яркий синий */
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  }
+  
+  .result-back-button:hover {
+    background-color: #357ab8; /* Темный синий */
+    transform: scale(1.05);
+  }
+  
+  /* Контейнер для видео */
+  .result-video-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.7); /* Полупрозрачный фон */
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Стили видео */
+  .result-video {
+    width: 100%;
+    max-height: 500px;
+    border: 2px solid #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    object-fit: contain; /* Масштабирует видео, сохраняя пропорции */
+  }
+  
+  /* Анимация появления */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
