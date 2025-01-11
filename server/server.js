@@ -14,10 +14,11 @@ app.use(cors({
 }));
 
 const dbConfig = {
-  host: '127.0.0.1',
-  port: 5436,
-  user: 'SA',
-  password: 'avRK-LnF1n',
+  host: 'localhost',
+  port: 5432,
+  database: 'SmartDetector',
+  user: 'postgres',
+  password: '1234',
 };
 
 // Проверка и создание базы данных, если она отсутствует
@@ -65,11 +66,11 @@ async function initializeTables() {
 })();
 
 const pool = new Pool({
-  host: '127.0.0.1',
-  port: 5436,
+  host: 'localhost',
+  port: 5432,
   database: 'SmartDetector',
-  user: 'SA',
-  password: 'avRK-LnF1n',
+  user: 'postgres',
+  password: '1234',
 });
 
 const authenticateToken = (req, res, next) => {

@@ -8,21 +8,41 @@ function Register() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
+  const validateForm = () => {
+    if (!email.includes('@')) return 'Введите корректный email';
+    if (phone.length < 10) return 'Введите корректный номер телефона';
+    if (password.length < 6) return 'Пароль должен быть не менее 6 символов';
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const error = validateForm();
+    if (error) {
+      alert(error);
+      return;
+    }
+
     try {
-      const response = await fetch('http://localhost:5000/register', {
+      console.log({ email, phone, password }); // Для проверки отправляемых данных
+
+      const response = await fetch('http://localhost:5040/api/registration/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, phone, password }),
       });
-      // Перенаправляем на страницу входа после успешной регистрации
+
       if (response.ok) {
         console.log('Переход в форму входа');
         navigate('/login');
+      } else {
+        const errorData = await response.json();
+        console.error('Ошибка регистрации:', errorData);
+        alert(errorData.message || 'Ошибка регистрации');
       }
     } catch (error) {
-      alert('Registration failed');
+      console.error('Ошибка подключения:', error);
+      alert('Ошибка подключения. Проверьте сервер.');
     }
   };
 
@@ -38,7 +58,7 @@ function Register() {
         />
         <input
           className="register-input"
-          type="phone"
+          type="tel"
           placeholder="Телефон"
           onChange={(e) => setPhone(e.target.value)}
         />
@@ -53,9 +73,12 @@ function Register() {
         </button>
       </form>
 
-      {/* Кнопка для перехода на страницу входа */}
       <div className="switch-to-login">
-        <p>Уже есть аккаунт? <button className="register-button" onClick={() => navigate('/login')}>Войдите</button></p>
+        <p>Уже есть аккаунт?{' '}
+          <button className="register-button" onClick={() => navigate('/login')}>
+            Войдите
+          </button>
+        </p>
       </div>
     </div>
   );

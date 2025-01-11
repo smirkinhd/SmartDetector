@@ -10,27 +10,42 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
+  
+    // Очистка предыдущих ошибок
+    setError('');
+  
     try {
-      const response = await fetch('http://localhost:5000/login', {
+      const response = await fetch('http://localhost:5040/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('token', data.token); // Сохраняем токен
-        navigate('/profile'); // Переход на профиль
-      } else {
-        setError(data.error || 'Login failed');
+  
+      if (!response.ok) {
+        const text = await response.text();
+        console.log('Error response text:', text);
+        setError(text || 'Login failed');
+        return;
       }
+  
+      const data = await response.json();
+      console.log('Response Data:', data);
+  
+      if (!data.token) {
+        console.error('Token is missing in server response');
+        setError('Token is missing');
+        return;
+      }
+  
+      localStorage.setItem('token', data.token);
+      console.log('Token saved to localStorage:', localStorage.getItem('token'));
+  
+      navigate('/profile');
     } catch (error) {
       setError('An error occurred during login');
-      console.error(error);
+      console.error('Login Error:', error);
     }
   };
 

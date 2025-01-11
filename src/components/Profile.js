@@ -64,7 +64,7 @@ const Profile = () => {
     formData.append('areas', jsonFile);
   
     try {
-      const response = await fetch('http://localhost:5000/upload', {
+      const response = await fetch('http://localhost:5040/api/import/upload', {
         method: 'POST',
         body: formData,
         onUploadProgress: (event) => {
@@ -75,27 +75,39 @@ const Profile = () => {
       });
   
       if (response.ok) {
-        const data = await response.json();
-        console.log('Ответ от сервера:', data);
-  
-        const videoUrl = data.videoUrl;
-  
-        if (videoUrl) {
-          // Добавляем случайный параметр к URL, чтобы избежать кэширования
-          const videoUrlWithCacheBuster = videoUrl + '?t=' + new Date().getTime();
-          setIsPageBlocked(false);
-          handleCloseModal();
-          
-          // Используем useNavigate для редиректа на Result.js с передачей URL
-          navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
-        } else {
-          alert('Ответ от сервера не содержит videoUrl');
-          setIsPageBlocked(false);
+        try {
+            const data = await response.json();
+            console.log('Ответ от сервера:', data);
+    
+            if (data && data.video) {
+                const videoUrl = data.video;
+    
+                if (videoUrl) {
+                    // Добавляем случайный параметр к URL, чтобы избежать кэширования
+                    const videoUrlWithCacheBuster = `${videoUrl}?t=${new Date().getTime()}`;
+                    setIsPageBlocked(false);
+                    handleCloseModal();
+                  
+                    // Используем useNavigate для редиректа на Result.js с передачей URL
+                    navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
+                } else {
+                    alert('Ответ от сервера не содержит videoUrl');
+                    setIsPageBlocked(false);
+                }
+            } else {
+                alert('Ответ от сервера некорректен или не содержит видео.');
+                setIsPageBlocked(false);
+            }
+        } catch (error) {
+            console.error('Ошибка при чтении ответа:', error);
+            alert('Ответ от сервера не является корректным JSON.');
+            setIsPageBlocked(false);
         }
-      } else {
+    } else {
         alert('Ошибка при отправке данных!');
         setIsPageBlocked(false);
-      }
+    }
+    
     } catch (error) {
       console.error('Ошибка:', error);
       alert('Произошла ошибка при отправке данных на сервер.');
@@ -165,7 +177,7 @@ const Profile = () => {
   
     const fetchProfile = async () => {
       try {
-        const response = await fetch('http://localhost:5000/profile', {
+        const response = await fetch('http://localhost:5040/api/auth/profile', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,

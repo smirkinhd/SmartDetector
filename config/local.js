@@ -2,11 +2,11 @@ module.exports = {
     db: {
       main: {
         dialect: 'postgres',
-        host: '127.0.0.1',
-        port: '5436',
+        host: 'localhost',
+        port: '5432',
         database: 'SmartDetector',
-        user: 'SA',
-        password: 'avRK-LnF1n',
+        user: 'postgres',
+        password: '1234',
         requestTimeout: 600000,
         isolationLevel: 'READ_UNCOMMITTED',
       }
