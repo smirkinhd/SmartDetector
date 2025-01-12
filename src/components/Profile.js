@@ -129,10 +129,11 @@ const Profile = () => {
       return;
     }
 
-    if (selectedPoints.length === 4) {
+    if (selectedPoints.length === 4 && oriSelectedPoints.length === 4) {
       setAreas((prevAreas) => [...prevAreas, selectedPoints]);
       oriSetAreas((prevAreas) => [...prevAreas, oriSelectedPoints]);
       setSelectedPoints([]);
+      oriSetSelectedPoints([]);
     } else {
       alert('Выберите как минимум 4 точки для создания области.');
     }
