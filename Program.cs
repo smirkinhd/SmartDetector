@@ -1,7 +1,9 @@
 ﻿using BackendGermanSmartDetector.AppDbContext;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -37,6 +39,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 var app = builder.Build();
 
 app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Temp")),
+    RequestPath = "/Temp",
+    ContentTypeProvider = new FileExtensionContentTypeProvider
+    {
+        Mappings = { [".mp4"] = "video/mp4" }
+    }
+});
 
 app.UseRouting();
 app.UseAuthentication();
