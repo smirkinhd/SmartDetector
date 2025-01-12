@@ -78,20 +78,18 @@ const Profile = () => {
         try {
             const data = await response.json();
             console.log('Ответ от сервера:', data);
-    
+        
             if (data && data.video) {
-                const videoUrl = data.video;
-    
-                if (videoUrl) {
-                    // Добавляем случайный параметр к URL, чтобы избежать кэширования
-                    const videoUrlWithCacheBuster = `${videoUrl}?t=${new Date().getTime()}`;
-                    setIsPageBlocked(false);
-                    handleCloseModal();
-                  
-                    // Используем useNavigate для редиректа на Result.js с передачей URL
-                    navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
-                } else {
-                    alert('Ответ от сервера не содержит videoUrl');
+              const videoUrl = data.video;
+              if (videoUrl) {
+                  const basePath = '/Temp/';  // Укажите правильный базовый путь к видео
+                  const videoUrlWithCacheBuster = `${basePath}${videoUrl}?t=${new Date().getTime()}`;
+                  setIsPageBlocked(false);
+                  handleCloseModal();
+              
+                  navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
+              } else {
+                    alert('Ответ от сервера не содержит video');
                     setIsPageBlocked(false);
                 }
             } else {
