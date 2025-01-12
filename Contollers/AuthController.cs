@@ -44,9 +44,8 @@ namespace BackendGermanSmartDetector.Controllers
                 return Unauthorized(new { error = "Неверные учетные данные" });
             }
 
-            // Получаем JWT_SECRET из конфигурации
             var jwtSecret = _configuration["JWT_SECRET"];
-            if (string.IsNullOrEmpty(jwtSecret) || jwtSecret.Length < 32) // Длина секрета должна быть минимум 256 бит (32 байта)
+            if (string.IsNullOrEmpty(jwtSecret) || jwtSecret.Length < 32) 
             {
                 return StatusCode(500, new { error = "Ошибка сервера: секретный ключ JWT слишком короткий" });
             }
@@ -55,12 +54,11 @@ namespace BackendGermanSmartDetector.Controllers
 
             var tokenHandler = new JwtSecurityTokenHandler();
 
-            // Создание описателя токена
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[] { new Claim("userId", user.Id.ToString()) }),
-                Expires = DateTime.UtcNow.AddHours(1), // Токен истекает через 1 час
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature) // Используем HMAC-SHA256
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -69,36 +67,27 @@ namespace BackendGermanSmartDetector.Controllers
             return Ok(new { token = tokenString });
         }
 
-        [HttpGet("profile")]
         [Authorize]
+        [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
-        {
+         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (userIdClaim == null)
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+                if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized(new { error = "Не удалось получить токен пользователя" });
+                    return Unauthorized(new { error = "Токен отсутствует" });
                 }
 
-                var userId = userIdClaim.Value;
-
-                var user = await _context.Users
-                    .Where(u => u.Id.ToString() == userId)
-                    .Select(u => new { u.Email, u.Phone })
-                    .FirstOrDefaultAsync();
-
-                if (user == null)
-                {
-                    return NotFound(new { error = "Пользователь не найден" });
-                }
-
-                return Ok(new { email = user.Email, phone = user.Phone });
+                return Created("", new { message = "Успешная проверка" });
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, new { error = "Ошибка получения профиля", details = ex.Message });
             }
         }
+
+
     }
 }

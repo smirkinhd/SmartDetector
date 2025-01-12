@@ -35,4 +35,10 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Temp\" />
+    <Folder Include="YoloModel\" />
+    <Folder Include="Python\" />
+  </ItemGroup>
+
 </Project>
