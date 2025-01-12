@@ -10,6 +10,8 @@ const Profile = () => {
   const [error, setError] = useState('');
   const [videoFile, setVideoFile] = useState(null);
   const [areas, setAreas] = useState([]);
+  const [oriAreas, oriSetAreas] = useState([]);
+  const [oriSelectedPoints, oriSetSelectedPoints] = useState([]);
   const [selectedPoints, setSelectedPoints] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(null);
@@ -17,6 +19,7 @@ const Profile = () => {
   const [isPageBlocked, setIsPageBlocked] = useState(false); // Для блокировки страницы
   const [uploadProgress, setUploadProgress] = useState(0); // Для отслеживания прогресса
   const [videoUrl, setVideoUrl] = useState(null); // Новый state для хранения URL
+  const [originalVideoResolution, setOriginalVideoResolution] = useState({ width: 0, height: 0 });
 
   const navigate = useNavigate();
   const videoRef = useRef(null);
@@ -45,7 +48,7 @@ const Profile = () => {
     setIsPageBlocked(true);
     setUploadProgress(0);
   
-    const formattedAreas = areas.map((area, index) => ({
+    const formattedAreas = oriAreas.map((area, index) => ({
       areaNumber: index + 1,
       coordinates: area,
     }));
@@ -71,41 +74,29 @@ const Profile = () => {
           if (event.total) {
             setUploadProgress(Math.round((event.loaded * 100) / event.total));
           }
-        }
+        },
       });
   
       if (response.ok) {
-        try {
-            const data = await response.json();
-            console.log('Ответ от сервера:', data);
-        
-            if (data && data.video) {
-              const videoUrl = data.video;
-              if (videoUrl) {
-                  const basePath = '/Temp/';  // Укажите правильный базовый путь к видео
-                  const videoUrlWithCacheBuster = `${basePath}${videoUrl}?t=${new Date().getTime()}`;
-                  setIsPageBlocked(false);
-                  handleCloseModal();
-              
-                  navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
-              } else {
-                    alert('Ответ от сервера не содержит video');
-                    setIsPageBlocked(false);
-                }
-            } else {
-                alert('Ответ от сервера некорректен или не содержит видео.');
-                setIsPageBlocked(false);
-            }
-        } catch (error) {
-            console.error('Ошибка при чтении ответа:', error);
-            alert('Ответ от сервера не является корректным JSON.');
-            setIsPageBlocked(false);
+        const data = await response.json();
+        console.log('Ответ от сервера:', data);
+  
+        const videoUrl = data.videoUrl;
+  
+        if (videoUrl) {
+          const videoUrlWithCacheBuster = videoUrl + '?t=' + new Date().getTime();
+          setIsPageBlocked(false);
+          handleCloseModal();
+  
+          navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
+        } else {
+          alert('Ответ от сервера не содержит videoUrl');
+          setIsPageBlocked(false);
         }
-    } else {
+      } else {
         alert('Ошибка при отправке данных!');
         setIsPageBlocked(false);
-    }
-    
+      }
     } catch (error) {
       console.error('Ошибка:', error);
       alert('Произошла ошибка при отправке данных на сервер.');
@@ -117,13 +108,10 @@ const Profile = () => {
   // Получение кадра из видео
   const handleOpenFrame = () => {
     const canvas = document.createElement('canvas');
-    const video = videoRef.current;
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
+    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
     setCurrentFrame(canvas.toDataURL('image/png'));
     setIsModalOpen(true);
   };
@@ -143,6 +131,7 @@ const Profile = () => {
 
     if (selectedPoints.length === 4) {
       setAreas((prevAreas) => [...prevAreas, selectedPoints]);
+      oriSetAreas((prevAreas) => [...prevAreas, oriSelectedPoints]);
       setSelectedPoints([]);
     } else {
       alert('Выберите как минимум 4 точки для создания области.');
@@ -151,10 +140,24 @@ const Profile = () => {
 
   // Добавление точки на изображении
   const handleImageClick = (event) => {
-    const rect = event.target.getBoundingClientRect();
+    const rect = event.target.getBoundingClientRect(); // Получаем размеры изображения на экране
+
+    // Координаты клика относительно изображения на экране
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     setSelectedPoints((prevPoints) => [...prevPoints, { x, y }]);
+
+
+    const scaleX = videoRef.current.videoWidth / rect.width; // Коэффициент масштабирования по ширине
+    const scaleY = videoRef.current.videoHeight / rect.height; // Коэффициент масштабирования по высоте
+  
+    // Преобразуем координаты в оригинальные размеры видео
+    const orx = x * scaleX;
+    const ory = y * scaleY;
+  
+    // Добавляем точку в список выбранных
+    oriSetSelectedPoints((prevPoints) => [...prevPoints, { orx, ory }]);
+    
   };
 
   // Выход из аккаунта
@@ -162,6 +165,18 @@ const Profile = () => {
     localStorage.removeItem('token'); // Удаляем токен из локального хранилища
     navigate('/'); // Перенаправление на главную страницу
   };
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.onloadedmetadata = () => {
+        const width = videoRef.current.videoWidth;
+        const height = videoRef.current.videoHeight;
+        console.log('Video dimensions:', width, height);
+  
+        setOriginalVideoResolution({ width, height });
+      };
+    }
+  }, [videoUrl]);
 
 
   // Получение данных профиля
@@ -175,7 +190,7 @@ const Profile = () => {
   
     const fetchProfile = async () => {
       try {
-        const response = await fetch('http://localhost:5040/api/auth/profile', {
+        const response = await fetch('http://localhost:5040/api/auth/profil', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
