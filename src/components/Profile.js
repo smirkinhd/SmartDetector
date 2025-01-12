@@ -82,13 +82,15 @@ const Profile = () => {
         console.log('Ответ от сервера:', data);
   
         const videoUrl = data.videoUrl;
-  
-        if (videoUrl) {
+        const excelUrl = data.excelDownloadUrl;
+        
+        if (videoUrl && excelUrl) {
           const videoUrlWithCacheBuster = videoUrl + '?t=' + new Date().getTime();
+          const excelUrlWithCacheBuster = excelUrl + '?t=' + new Date().getTime();
           setIsPageBlocked(false);
           handleCloseModal();
   
-          navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
+          navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}&excelUrl=${encodeURIComponent(excelUrlWithCacheBuster)}`);
         } else {
           alert('Ответ от сервера не содержит videoUrl');
           setIsPageBlocked(false);

@@ -193,6 +193,7 @@ app.post('/upload', upload.fields([{ name: 'video' }, { name: 'areas' }]), (req,
     res.send({
       message: 'Файлы успешно сохранены!',
       videoUrl: '/2024-08-07 01-16-23 (1).mkv',  // Отправляем правильный путь для доступа к видео
+      excelDownloadUrl: `/Report.xlsx`
     });
   } catch (error) {
     console.error('Ошибка при сохранении файлов:', error);
@@ -200,11 +201,9 @@ app.post('/upload', upload.fields([{ name: 'video' }, { name: 'areas' }]), (req,
   }
 });
 
+
 // Статический сервер для видео
 app.use(express.static(path.join(__dirname, 'public')));
-
-
-
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
