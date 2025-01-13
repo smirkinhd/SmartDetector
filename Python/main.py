@@ -1,8 +1,9 @@
 import cv2
 import os
 import tomllib
+import pandas as pd
 
-from args_loader import load_args
+from args_loader import load_args, region_adapt
 from sector import Sector
 from regions_counter import RegionsCounter
 from step_timer import StepTimer
@@ -16,7 +17,7 @@ def get_fps(cap) -> float|int:
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-video_path, model_path, output_path, report_path, regions = load_args()
+video_path, model_path, output_path, report_path, list_region = load_args()
 
 # Подгружаем данные из TOML файла.
 # Надеюсь Гуидо ван Россум простит меня за это.
@@ -37,13 +38,17 @@ sector = Sector(
     settings["observation-time"],
     settings["vehicle-size-coeffs"],
 )
-counter = RegionsCounter(model_path, regions=regions)
-
+video_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 width, height = settings["target-width"], settings["target-height"]
+
+regions = region_adapt(list_region, video_width, width)
+counter = RegionsCounter(model_path, regions=regions)
 
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 output = cv2.VideoWriter(output_path, fourcc, get_fps(cap), (width, height))
 
+# Флаг для генерации последнего отчета
+generate_report = True  
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
@@ -75,12 +80,22 @@ while cap.isOpened():
     output.write(frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
+        generate_report = False
         sector.new_period()
         break
 
-stats = sector.traffic_stats()
-print(stats)
-stats.to_excel(report_path)
+# Генерация отчета за последний период
+# TODO: не генерировать, если нажато q
+if generate_report:
+    sector.new_period()
+
+traffic_stats = sector.traffic_stats()
+classwise_stats = sector.classwise_stats()
+print(traffic_stats)
+print(classwise_stats)
+
+merged_stats = pd.concat([traffic_stats, classwise_stats], axis=1)
+merged_stats.to_excel(report_path)
 
 # Освобождаем ресурсы
 cap.release()
