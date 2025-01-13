@@ -82,13 +82,15 @@ const Profile = () => {
         console.log('Ответ от сервера:', data);
   
         const videoUrl = data.videoUrl;
+        const excelUrl = data.excelUrl;
   
-        if (videoUrl) {
+        if (videoUrl && excelUrl) {
           const videoUrlWithCacheBuster = videoUrl + '?t=' + new Date().getTime();
+          const excelUrlWithCacheBuster = excelUrl + '?t=' + new Date().getTime();
           setIsPageBlocked(false);
           handleCloseModal();
-  
-          navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}`);
+
+          navigate(`/result?videoUrl=${encodeURIComponent(videoUrlWithCacheBuster)}&excelUrl=${encodeURIComponent(excelUrlWithCacheBuster)}`);
         } else {
           alert('Ответ от сервера не содержит videoUrl');
           setIsPageBlocked(false);
@@ -129,10 +131,11 @@ const Profile = () => {
       return;
     }
 
-    if (selectedPoints.length === 4) {
+    if (selectedPoints.length === 4 && oriSelectedPoints.length === 4) {
       setAreas((prevAreas) => [...prevAreas, selectedPoints]);
       oriSetAreas((prevAreas) => [...prevAreas, oriSelectedPoints]);
       setSelectedPoints([]);
+      oriSetSelectedPoints([]);
     } else {
       alert('Выберите как минимум 4 точки для создания области.');
     }
@@ -190,7 +193,7 @@ const Profile = () => {
   
     const fetchProfile = async () => {
       try {
-        const response = await fetch('http://localhost:5040/api/auth/profil', {
+        const response = await fetch('http://localhost:5040/api/auth/profile', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
