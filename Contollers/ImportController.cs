@@ -15,6 +15,11 @@ namespace BackendGermanSmartDetector.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
+        private string modelPath;
+        private string outputCsvPath;
+        private string videoPath;
+        private string jsonPath;
+        private string outputVideoPath;
         public ImportController(IConfiguration configuration, IWebHostEnvironment env)
         {
             _configuration = configuration;
@@ -24,6 +29,19 @@ namespace BackendGermanSmartDetector.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> Upload([FromForm] IFormFile video, [FromForm] IFormFile areas)
         {
+
+            string tempFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp");
+
+            if (Directory.Exists(tempFolderPath))
+            {
+                string[] files = Directory.GetFiles(tempFolderPath);
+
+                foreach (string file in files)
+                {
+                    System.IO.File.Delete(file);
+                }
+            }
+
             if (video == null || areas == null)
             {
                 return BadRequest("Оба файла (видео и JSON) должны быть переданы.");
@@ -55,11 +73,11 @@ namespace BackendGermanSmartDetector.Controllers
                 return BadRequest($"Ошибка десериализации JSON: {ex.Message}");
             }
 
-            string videoPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp", Path.GetRandomFileName() + Path.GetExtension(video.FileName));
-            string jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp", Path.GetRandomFileName() + ".json");
-            string outputVideoPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp", Path.GetRandomFileName() + Path.GetExtension(video.FileName));
-            string outputCsvPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp", "Report" + ".xlsx");
-            string modelPath = Path.Combine(Directory.GetCurrentDirectory(), "YoloModel", "detector_yolov10s.pt");
+            videoPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp", Path.GetRandomFileName() + Path.GetExtension(video.FileName));
+            jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp", Path.GetRandomFileName() + ".json");
+            outputVideoPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp", Path.GetRandomFileName() + Path.GetExtension(video.FileName));
+            outputCsvPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp", "Report" + ".xlsx");
+            modelPath = Path.Combine(Directory.GetCurrentDirectory(), "YoloModel", "detector_yolov10s.pt");
 
             try
             {
@@ -96,16 +114,17 @@ namespace BackendGermanSmartDetector.Controllers
 
                 string videoUrl = Url.Content($"~/Temp/{Path.GetFileName(outputVideoPath)}");
                 string excelDownloadUrl = Url.Action(nameof(DownloadExcel), new { filePath = outputCsvPath });
+                excelDownloadUrl = Path.GetFileName(excelDownloadUrl);
 
                 return Ok(new
                 {
                     VideoUrl = videoUrl,
-                    ExcelDownloadUrl = excelDownloadUrl
+                    excelUrl = excelDownloadUrl
                 });
             }
-            finally
+            catch (Exception ex)
             {
-
+                return BadRequest(ex);
             }
         }
 
@@ -114,9 +133,9 @@ namespace BackendGermanSmartDetector.Controllers
         {
             int index = filePath.IndexOf('?');
 
-            if (index >= 0) // Если знак ? найден
+            if (index >= 0) 
             {
-                filePath = filePath.Substring(0, index); // Обрезаем до знака ?
+                filePath = filePath.Substring(0, index);
             }
 
             filePath = filePath.Replace("?", "");
@@ -147,7 +166,7 @@ namespace BackendGermanSmartDetector.Controllers
         public class MultipartResponse
         {
             public string VideoUrl { get; set; } 
-            public string ExcelDownloadUrl { get; set; }  
+            public string excelUrl { get; set; }  
         }
     }
 }
