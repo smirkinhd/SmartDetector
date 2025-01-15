@@ -18,6 +18,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.0" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.3.0" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.20.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Npgsql" Version="9.0.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2" />
     <PackageReference Include="OpenCvSharp4" Version="4.10.0.20241108" />
@@ -38,7 +39,6 @@
   <ItemGroup>
     <Folder Include="Temp\" />
     <Folder Include="YoloModel\" />
-    <Folder Include="Python\" />
   </ItemGroup>
 
 </Project>

@@ -20,6 +20,7 @@ namespace BackendGermanSmartDetector.Controllers
         private string videoPath;
         private string jsonPath;
         private string outputVideoPath;
+        private string outputConvertVideo;
         public ImportController(IConfiguration configuration, IWebHostEnvironment env)
         {
             _configuration = configuration;
@@ -54,6 +55,8 @@ namespace BackendGermanSmartDetector.Controllers
                 jsonContent = await reader.ReadToEndAsync();
             }
 
+            int timeoutMilliseconds = 60000;
+
             try
             {
                 jsonContent = jsonContent.Replace("\"orx\"", "\"x\"").Replace("\"ory\"", "\"y\"");
@@ -78,6 +81,7 @@ namespace BackendGermanSmartDetector.Controllers
             outputVideoPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp", Path.GetRandomFileName() + Path.GetExtension(video.FileName));
             outputCsvPath = Path.Combine(Directory.GetCurrentDirectory(), "Temp", "Report" + ".xlsx");
             modelPath = Path.Combine(Directory.GetCurrentDirectory(), "YoloModel", "detector_yolov10s.pt");
+            outputConvertVideo = Path.Combine(Directory.GetCurrentDirectory(), "Temp", Path.GetRandomFileName() + Path.GetExtension(video.FileName));
 
             try
             {
@@ -89,7 +93,9 @@ namespace BackendGermanSmartDetector.Controllers
                 await System.IO.File.WriteAllTextAsync(jsonPath, jsonContent);
 
                 string pythonScriptPath = Path.Combine(Directory.GetCurrentDirectory(), "Python", "main.py");
+                string converterScript = Path.Combine(Directory.GetCurrentDirectory(), "Python", "remux_to_h264.py");
                 string arguments = $"\"{pythonScriptPath}\" --video-path \"{videoPath}\" --model-path \"{modelPath}\" --output-path \"{outputVideoPath}\" --report-path \"{outputCsvPath}\" --regions \"{jsonPath}\"";
+                string argConv = $"\"{converterScript}\" \"{outputVideoPath}\" \"{outputConvertVideo}\"";
 
                 var processStartInfo = new ProcessStartInfo
                 {
@@ -112,9 +118,31 @@ namespace BackendGermanSmartDetector.Controllers
                     }
                 }
 
-                string videoUrl = Url.Content($"~/Temp/{Path.GetFileName(outputVideoPath)}");
                 string excelDownloadUrl = Url.Action(nameof(DownloadExcel), new { filePath = outputCsvPath });
                 excelDownloadUrl = Path.GetFileName(excelDownloadUrl);
+
+                var converter = new ProcessStartInfo
+                {
+                    FileName = "python",
+                    Arguments = argConv,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = false
+                };
+
+                using (var converterProcess = Process.Start(converter))
+                {
+                    await converterProcess.WaitForExitAsync();
+
+                    if (converterProcess.ExitCode != 0)
+                    {
+                        string error = await converterProcess.StandardError.ReadToEndAsync();
+                        return StatusCode(500, $"Ошибка выполнения Python-скрипта: {error}");
+                    }
+                }
+
+                string videoUrl = Url.Content($"~/Temp/{Path.GetFileName(outputConvertVideo)}");
 
                 return Ok(new
                 {
