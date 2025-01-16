@@ -11,7 +11,7 @@ using System.Security.Cryptography;
 
 namespace BackendGermanSmartDetector.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class AuthController : Controller
     {

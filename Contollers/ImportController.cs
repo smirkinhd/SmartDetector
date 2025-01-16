@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace BackendGermanSmartDetector.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class ImportController : ControllerBase
     {
