@@ -21,7 +21,7 @@ video_path, model_path, output_path, report_path, list_region = load_args()
 
 # Подгружаем данные из TOML файла.
 # Надеюсь Гуидо ван Россум простит меня за это.
-with open(r"C:\Users\smirk\source\repos\SmartDetector\Python\settings.toml", "rb") as f:
+with open(f"{os.path.dirname(os.path.realpath(__file__))}/settings.toml", "rb") as f:
     settings = tomllib.load(f)
 
 # Открываем видео
@@ -76,7 +76,7 @@ while cap.isOpened():
     )
 
     # Показ текущего кадра
-    cv2.imshow("Crossroad Monitoring", frame)
+    #cv2.imshow("Crossroad Monitoring", frame)
     output.write(frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -84,6 +84,7 @@ while cap.isOpened():
         sector.new_period()
         break
 
+output.release()
 # Генерация отчета за последний период
 # TODO: не генерировать, если нажато q
 if generate_report:
@@ -99,5 +100,4 @@ merged_stats.to_excel(report_path)
 
 # Освобождаем ресурсы
 cap.release()
-output.release()
-cv2.destroyAllWindows()
+

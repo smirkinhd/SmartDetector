@@ -9,10 +9,10 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenLocalhost(5040);
-});
+// builder.WebHost.ConfigureKestrel(options =>
+// {
+//     options.ListenLocalhost(5040);
+// });
 
 var configuration = builder.Configuration;
 
@@ -50,6 +50,7 @@ app.UseStaticFiles(new StaticFileOptions
     }
 });
 
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -57,5 +58,10 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapFallbackToFile("index.html");
+ using (var scope = app.Services.CreateScope())
+ {
+     var db = scope.ServiceProvider.GetService<ApplicationDbContext>();
+     db.Database.EnsureCreated();
+ }
 
 app.Run();
