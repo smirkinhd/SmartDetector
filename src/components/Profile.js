@@ -67,7 +67,7 @@ const Profile = () => {
     formData.append('areas', jsonFile);
   
     try {
-      const response = await fetch('http://localhost:5040/api/import/upload', {
+      const response = await fetch('http://localhost:5040/import/upload', {
         method: 'POST',
         body: formData,
         onUploadProgress: (event) => {
@@ -193,7 +193,7 @@ const Profile = () => {
   
     const fetchProfile = async () => {
       try {
-        const response = await fetch('http://localhost:5040/api/auth/profile', {
+        const response = await fetch('http://localhost:5040/auth/profile', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,

@@ -9,7 +9,7 @@ const Result = () => {
   const excelUrl = params.get('excelUrl');
 
   const handleDownloadExcel = async () => {
-    const downloadUrl = `http://localhost:5040/api/Import/${excelUrl}`;
+    const downloadUrl = `http://localhost:5040/Import/${excelUrl}`;
 
     try {
       const response = await fetch(downloadUrl);

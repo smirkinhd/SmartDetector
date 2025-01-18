@@ -26,7 +26,7 @@ function Register() {
     try {
       console.log({ email, phone, password }); // Для проверки отправляемых данных
 
-      const response = await fetch('http://localhost:5040/api/registration/register', {
+      const response = await fetch('http://localhost:5040/registration/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, phone, password }),
