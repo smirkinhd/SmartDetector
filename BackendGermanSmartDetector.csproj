@@ -38,7 +38,6 @@
 
   <ItemGroup>
     <Folder Include="Temp\" />
-    <Folder Include="YoloModel\" />
   </ItemGroup>
 
 </Project>
