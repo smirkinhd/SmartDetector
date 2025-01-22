@@ -7,7 +7,7 @@ require('dotenv').config();
 
 const pool = new Pool({
     host: '127.0.0.1',
-    port: 5436,
+    port: 8080,
     database: 'SmartDetector',
     user: 'SA',
     password: 'avRK-LnF1n',
@@ -17,7 +17,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: 'http://localhost:8080',
     credentials: true,
 }));
 

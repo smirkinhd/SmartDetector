@@ -1,0 +1,43 @@
+services:
+  cybernadzor:
+    restart: always
+    hostname: backend
+    runtime: nvidia
+    command: nvidia-smi
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    depends_on:
+     - backend_db
+    environment:
+     - ASPNETCORE_ENVIRONMENT=DEVELOPMENT
+     - NVIDIA_VISIBLE_DEVICES=all
+    networks:   
+     - backend
+    ports:
+     - "8080:8080"
+    volumes:
+     - ./Temp/:/app/Temp/
+  backend_db:
+   container_name: backend_db
+   restart: always
+   image: postgres:17-alpine
+   networks:
+    - backend
+   expose:
+    - "5436:5432"
+   volumes:
+    - backend-data:/var/lib/postgresql/data
+   environment:
+    POSTGRES_DB: "SmartDetector"
+    POSTGRES_USER: "postgres"
+    POSTGRES_PASSWORD: "1234"
+    POSTGRES_HOST_AUTH_METHOD: "trust"
+    DB_DEV_HOST: localhost
+    DB_HOST: backend_db
+    PGDATA: "/var/lib/postgresql/data/pgdata"
+volumes:
+  backend-data:
+
+networks:
+  backend:
