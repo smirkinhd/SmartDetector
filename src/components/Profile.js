@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css'; // Подключаем стили
+import { getApiBaseUrl } from '../config';
 
 
 const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#FFA500', '#800080', '#008000', '#808080']; // 10 цветов
 
 const Profile = () => {
+  const apiBaseUrl = getApiBaseUrl();
   const [userData, setUserData] = useState({ email: '', phone: '' });
   const [error, setError] = useState('');
   const [videoFile, setVideoFile] = useState(null);
@@ -67,7 +69,7 @@ const Profile = () => {
     formData.append('areas', jsonFile);
   
     try {
-      const response = await fetch('http://localhost:5040/import/upload', {
+      const response = await fetch(`${apiBaseUrl}/import/upload`, {
         method: 'POST',
         body: formData,
         onUploadProgress: (event) => {
@@ -193,7 +195,7 @@ const Profile = () => {
   
     const fetchProfile = async () => {
       try {
-        const response = await fetch('http://localhost:5040/auth/profile', {
+        const response = await fetch(`${apiBaseUrl}/auth/profile`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -228,7 +230,7 @@ const Profile = () => {
         >
           <span>{userData.email}</span>
         </div>
-        {isDropdownVisible && (
+        {!isDropdownVisible && (
           <div className="dropdown-menu">
             <button onClick={handleLogout}>Выход</button>
           </div>
@@ -330,10 +332,10 @@ const Profile = () => {
       )}
       {isPageBlocked && (
         <div className="page-blocker">
-          <div className="progress-bar-container">
-            <div className="progress-bar" style={{ width: `${uploadProgress}%` }}></div>
-          </div>
-          <p>Загрузка... {uploadProgress}%</p>
+          <div className="spinner-container">
+          <div className="spinner"></div>
+        </div>
+        <p>   Загрузка...</p>
         </div>
       )}
     </div>

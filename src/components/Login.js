@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css'; // Подключаем стили
+import { getApiBaseUrl } from '../config';
 
 const Login = () => {
+  const apiBaseUrl = getApiBaseUrl();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -15,7 +17,7 @@ const Login = () => {
     setError('');
   
     try {
-      const response = await fetch('http://localhost:5040/auth/login', {
+      const response = await fetch(`${apiBaseUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

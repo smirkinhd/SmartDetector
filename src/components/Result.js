@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Result.css';
+import { getApiBaseUrl } from '../config';
 
 const Result = () => {
   const location = useLocation();
@@ -9,7 +10,8 @@ const Result = () => {
   const excelUrl = params.get('excelUrl');
 
   const handleDownloadExcel = async () => {
-    const downloadUrl = `http://localhost:5040/Import/${excelUrl}`;
+    const apiBaseUrl = getApiBaseUrl();
+    const downloadUrl = `${apiBaseUrl}/Import/${excelUrl}`;
 
     try {
       const response = await fetch(downloadUrl);

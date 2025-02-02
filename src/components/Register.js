@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Register.css'; // Подключаем стили
+import { getApiBaseUrl } from '../config';
 
 function Register() {
+  const apiBaseUrl = getApiBaseUrl();
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -26,7 +28,7 @@ function Register() {
     try {
       console.log({ email, phone, password }); // Для проверки отправляемых данных
 
-      const response = await fetch('http://localhost:5040/registration/register', {
+      const response = await fetch(`${apiBaseUrl}/registration/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, phone, password }),
